@@ -14,6 +14,12 @@ public class Main {
         Linked_List list = new Linked_List();
         list.addFirst(product2);
         list.add(1, product1);
-        System.out.println(list);
+
+        System.out.println(list.add(new Product()));
+        System.out.println(list.removeFirst());
+        System.out.println(list.offerFirst(product1));
+        System.out.println(list.size());
+        System.out.println(list.isEmpty());
+        System.out.println(list.getFirst());
     }
 }

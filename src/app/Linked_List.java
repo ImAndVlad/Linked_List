@@ -33,7 +33,7 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     void linkLast(Product product) {
         Node<Product> l = last;
-        Node<Product> newNode = new Node<>(product,null, l);
+        Node<Product> newNode = new Node<>(product, null, l);
         last = newNode;
         if (l == null)
             first = newNode;
@@ -69,24 +69,60 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
         return true;
     }
 
+    private Product unlinkFirst(Node<Product> f) {
+        Product element = f.product;
+        Node<Product> next = f.next;
+        f.product = null;
+        f.next = null; // help GC
+        first = next;
+        if (next == null)
+            last = null;
+        else
+            next.prev = null;
+        size--;
+        return element;
+    }
+
     @Override
     public Product removeFirst() {
-        return null;
+        Node<Product> f = first;
+        if (f == null)
+            throw new NoSuchElementException();
+        return unlinkFirst(f);
+    }
+
+    private Product unlinkLast(Node<Product> l) {
+        Product element = l.product;
+        Node<Product> prev = l.prev;
+        l.product = null;
+        l.prev = null; // help GC
+        last = prev;
+        if (prev == null)
+            first = null;
+        else
+            prev.next = null;
+        size--;
+        return element;
     }
 
     @Override
     public Product removeLast() {
-        return null;
+        Node<Product> l = last;
+        if (l == null)
+            throw new NoSuchElementException();
+        return unlinkLast(l);
     }
 
     @Override
     public Product pollFirst() {
-        return null;
+        Node<Product> f = first;
+        return (f == null) ? null : unlinkFirst(f);
     }
 
     @Override
     public Product pollLast() {
-        return null;
+        Node<Product> l = last;
+        return (l == null) ? null : unlinkLast(l);
     }
 
     @Override
@@ -107,12 +143,14 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public Product peekFirst() {
-        return null;
+        Node<Product> f = first;
+        return (f == null) ? null : f.product;
     }
 
     @Override
     public Product peekLast() {
-        return null;
+        Node<Product> l = last;
+        return (l == null) ? null : l.product;
     }
 
     @Override
@@ -127,12 +165,12 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public boolean offer(Product product) {
-        return false;
+        return add(product);
     }
 
     @Override
     public Product remove() {
-        return null;
+        return removeFirst();
     }
 
     @Override
@@ -142,7 +180,7 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public Product element() {
-        return null;
+        return getFirst();
     }
 
     @Override
@@ -172,11 +210,18 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return first == null;
     }
 
     @Override
     public boolean contains(Object o) {
+        Node<Product> current = first;
+        for (int i = 0; i < size; i++) {
+            if (current.product.equals(o)) {
+                return true;
+            }
+            current = current.next;
+        }
         return false;
     }
 
@@ -197,11 +242,52 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public boolean add(Product product) {
-       return false;
+        linkLast(product);
+        return true;
+    }
+
+    Product unlink(Node<Product> x) {
+        // assert x != null;
+        Product element = x.product;
+        Node<Product> next = x.next;
+        Node<Product> prev = x.prev;
+
+        if (prev == null) {
+            first = next;
+        } else {
+            prev.next = next;
+            x.prev = null;
+        }
+
+        if (next == null) {
+            last = prev;
+        } else {
+            next.prev = prev;
+            x.next = null;
+        }
+
+        x.product = null;
+        size--;
+        return element;
     }
 
     @Override
     public boolean remove(Object o) {
+        if (o == null) {
+            for (Node<Product> x = first; x != null; x = x.next) {
+                if (x.product == null) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        } else {
+            for (Node<Product> x = first; x != null; x = x.next) {
+                if (o.equals(x.product)) {
+                    unlink(x);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -232,7 +318,8 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public void clear() {
-
+        first = last = null;
+        size = 0;
     }
 
     @Override
@@ -260,7 +347,7 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
 
     @Override
     public void add(int index, Product element) {
-       Objects.checkIndex(index, size + 1);
+        Objects.checkIndex(index, size + 1);
         Node<Product> newNode = new Node<>(element, null, null);
         if (first == null) {
             first = last = newNode;
@@ -271,7 +358,7 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
             last.next = newNode;
             last = newNode;
         } else {
-           Node<Product> prev = getNodeByIndex(index - 1);
+            Node<Product> prev = getNodeByIndex(index - 1);
             newNode.next = prev.next;
             prev.next = newNode;
         }
@@ -290,7 +377,7 @@ public class Linked_List extends Product implements List<Product>, Deque<Product
             }
         } else {
             Node<Product> prev = getNodeByIndex(index - 1);
-            removeProduct = prev.product;
+            removeProduct = prev.next.product;
             prev.next = prev.next.next;
             if (index == size - 1) {
                 last = prev;
